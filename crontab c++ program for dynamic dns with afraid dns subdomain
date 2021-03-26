@@ -1,0 +1,130 @@
+If you are in a situation like I am where you receive a DHCP address from your ISP and would like to keep track of it for outside services such as 
+running a VPN server at your house or a file server or any other number of services setup a subdomain at a free dynamicdns provider. 
+
+I chose to use https://freedns.afraid.org/ as my provider for keeping track of my outside ip address for use with a VPN server. This service is free
+all you have to do is setup an account and chose a subdomain and add your ip address to it. 
+
+Once that is setup, you can then use your linux, windows, or mac machine to keep it up-to-date.
+
+They have examples of different ways for you to do this, but I chose a different route as to reduce the network traffic to the site and to keep my work
+to a minimum. I have several raspberry pi's at my disposal so I chose to write a C++ program that will keep track of this and update it for me on a daily
+basis using crontab to execute the program everyday.
+
+There are a few things that you will need to do in order to get this working and I can show you what I did to get it up and running. You can change all 
+kinds of things in this program if you would like or even set it up using a multitude of different languages.
+
+First things first you will need to run a simple command that will pull your outside ip address and return that value to a file call originalip.txt
+To do this, run the following command:
+  dig +short myip.opendns.com @resolver1.opendns.com > originalip.txt
+ 
+You may open that file and review the contents if you wish to know your outside ip address or just remove "> originalip.txt" from the end of the command
+and it will print your outside ip address in the terminal window for you.
+
+To continue with this setup we will need to create the C++ program and to do this you can use a text editor of your chosing, my preferred method is using
+nano. Feel free to name this program whatever you wish, but do keep track of this name for further steps. This code will only work on Linux and Mac
+    nano dynamicip.cpp
+    
+Once inside you can copy the code below and adjust for your system or add extra things if you'd like:
+
+#include <string>
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+//defining a bash script to update the ip address for afraid.org 
+#define SENDIP "\
+#/bin/bash \n\
+curl (Input your update string here available from afraid if that is who you are using) >> results.txt"  //make sure you remove the parentheses when you put your web address
+                                                                                                         //string into this bash script
+
+//defining bash script to get outside ip address and input it into a file named currentip.txt
+#define GETCURRENT "\
+#bin/bash \n\
+dig +short myip.opendns.com @resolver1.opendns.com >> currentip.txt"
+
+//defining a bash script to delete currentip.txt after we are finished with this program
+#define DELFILE "\
+#bin/bash \n\
+rm currentip.txt"
+
+
+int main()
+{
+        //I like to declare my variables at the top of short programs
+        string currentip, originalip;   //These string variables will store the output of my files
+        ifstream infile1, infile2;      //In file declarations
+        ofstream outfile;     //Out file declarations
+
+        system(GETCURRENT);     //running the GETCURRENT bash script define above.
+
+        //Opening the two files needed for comparison
+        infile1.open("currentip.txt");
+        infile2.open("originalip.txt");
+
+        //These if statements let you know if there was a problem opening your files.
+        if (!infile1)
+                cout << "File open failure for file 1!\n";
+        if (!infile2)
+                cout << "File open failuure for file 2!\n";
+
+        //Pulling in the current ip address from the first bash script above and inputting it into the 
+        //string variable currentip and pulling the original ip address from the script you should run 
+        //before executing this program so that you will have an original ip address file to pull from
+        //for this comparison to work properly
+        infile1 >> currentip;
+        infile2 >> originalip;
+
+        //Remember it is good practice to close your files once you are finished with them
+        infile1.close();
+        infile2.close();
+
+        //This if statement is doing our comparison between the current ip pulled from the above bash
+        //script to the one from the original ip address text file. 
+        if (currentip != originalip)
+        {
+                cout << "IP  has changed\n";    //Outputting to terminal if there is a new ip address
+                outfile.open("originalip.txt"); //opening the originalip.txt file 
+                outfile << currentip;           //changing the original ip address to the new ip address in the file
+                outfile.close();                //closing the file (remember good practice)
+                system("GETIP");                //calling above bash script to update the outside ip address with the 
+                                                //service that you chose. This is for afraid.org's service.
+                cout << "IP has been updated\n";        //Writing to terminal that the IP address was updated
+        }
+        //This else statement is used to write to the terminal to tell you the ip address is still the same
+        else
+        {
+                cout << "IP is still the same.\n";
+        }
+
+        //deleting the currentip.txt file to make sure it doesn't keep adding lines to it when the program is
+        //ran multiple times. 
+        system(DELFILE);
+
+        return 0;
+}
+
+Next you will want to save the file. If using nano hit Control+s, and then Control+x (This will save the file and then exit)
+
+Now we are going to compile the program so that you can execute it on your Linux or Mac machine.
+  g++ yourfilename.cpp -o WhatYouWantToNameThisProgram
+  
+That should compile without any errors as long as you copy and pasted. If you didn't copy and paste, there could be errors and the compiler will tell you what it is.
+
+After that has finished you will want to make a crontab for this to run. You can do it as often as you would like, but I would recommend that it be ran no more
+often than once a day. To do this we will open crontab with the following command:
+    crontab -e
+
+If you have not added anything to this file before, it will prompt you to enter 1, 2, or 3. I recommend, as well as crontab, to use option 1
+Once in crontab, scroll all the way to the bottom of the file and add this at the bottom making sure you put the proper file path and name:
+  @daily /home/pi/YourExecutableFileNameHere >> crontabresults.txt
+
+Save it just like we did above for the C++ program by using Control+s and Control+x
+
+This example is if you are using a pi and put the executable program in your /home/pi directory. You can change the directory if you wish. It also writes the results 
+of the program to a file called crontabresults.txt so that you can monitor it every now and then if you would like. If you haven't changed directories you can use the command
+pwd and it will print the current working directory to your terminal screen so you can see the directory path. Or you can change back to the directory you were at previously
+and also run that command to get your exact path. 
+To test this you can change the @daily to * * * * * and save it so that it will run every second. This will give you the opportunity to make sure that it is executing properly
+but be sure to go back and change it to @daily.
+
+
