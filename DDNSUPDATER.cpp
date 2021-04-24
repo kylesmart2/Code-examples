@@ -1,7 +1,7 @@
 //**********************************************************************************************||
-//	This program will update your outside IP address with your DDNS provider given you have 	||
-//	an update URL.																				||
-//	Kyle Smart 4/2021																			||
+//	This program will update your outside IP address with your DDNS provider given you have 	   ||
+//	an update URL.																				                     ||
+//	Kyle Smart 4/2021																			                     ||
 
 #include <stdio.h>
 #include <stdlib.h>
