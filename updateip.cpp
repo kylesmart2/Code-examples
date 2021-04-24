@@ -13,7 +13,7 @@ using namespace std;
 
 #define REPORT "\
 #/bin/bash \n\
-curl https://freedns.afraid.org/dynamic/update.php?VEIxNmZ1RW9KOVE3T0ZUbDFuaGF0WEg1OjE5NjIzMDA0 \
+curl "ENTER YOUR URL HERE AND REMOVE QUOTES FROM THIS STATEMENT" \
 "
 
 class DDNS
