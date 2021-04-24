@@ -3,7 +3,6 @@
 //	an update URL.																				                     
 //	Kyle Smart 4/2021																			                     
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
