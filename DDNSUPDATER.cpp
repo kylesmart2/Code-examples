@@ -12,7 +12,7 @@ using namespace std;
 
 #define REPORT "\
 #/bin/bash \n\
-curl "ENTER YOUR URL HERE AND REMOVE QUOTES FROM THIS STATEMENT" \
+curl (ENTER YOUR URL HERE) \ //remove parentheses
 "
 
 class DDNS
