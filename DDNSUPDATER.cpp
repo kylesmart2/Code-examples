@@ -36,34 +36,37 @@ class DDNS
             cout << "File open failure!\n";
             
          getline(infile, ip);
+         currentip = ip;
          infile.close();  
       }
       void setoldip()
       {   
          string originalip;
-         ifstream oldip;
-         oldip.open("oldip.txt");
-         if(oldip) 
+         ifstream oldiptext;
+         oldiptext.open("oldip.txt");
+         if(oldiptext) 
          {
-            getline(oldip, originalip);
-            oldip.close();
+            getline(oldiptext, originalip);
+            oldiptext.close();
          } 
          else 
          {
             system("dig +short myip.opendns.com @resolver1.opendns.com >> oldip.txt");
             system(REPORT);
-            oldip.open("oldip.txt");
-            if(oldip) 
+            oldiptext.open("oldip.txt");
+            if(oldiptext) 
             {
-               getline(oldip, originalip);
-               oldip.close();
+               getline(oldiptext, originalip);
+               oldip = originalip;
+               oldiptext.close();
             } 
             else
                cout << "File open failure!\n";
          }
          
-         getline(oldip, originalip);
-         oldip.close();
+         getline(oldiptext, originalip);
+         oldip = originalip;
+         oldiptext.close();
       }
       string getcurrent() const
       {   return currentip;   }
